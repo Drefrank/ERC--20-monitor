@@ -1,0 +1,31 @@
+const Web3 = require('web3');
+const ABI = require('./path/to/erc20ABI.json'); // ERC-20 token ABI
+
+// Connect to an Ethereum node
+const web3 = new Web3('<ethereum_node_url>');
+
+// Set the wallet address and token contract address to monitor
+const walletAddress = '<wallet_address>';
+const tokenAddress = '<token_contract_address>';
+
+// Create a new instance of the ERC-20 token contract
+const tokenContract = new web3.eth.Contract(ABI, tokenAddress);
+
+// Function to monitor volume transactions
+async function monitorVolumeTransactions() {
+  // Retrieve the current balance of the wallet address
+  const balance = await tokenContract.methods.balanceOf(walletAddress).call();
+  console.log('Current balance:', balance);
+
+  // Subscribe to 'Transfer' events to monitor volume transactions
+  tokenContract.events.Transfer({ filter: { to: walletAddress } })
+    .on('data', event => {
+      console.log('Received tokens:', event.returnValues.value);
+    })
+    .on('error', error => {
+      console.error('Error:', error);
+    });
+}
+
+// Start monitoring volume transactions
+monitorVolumeTransactions();
